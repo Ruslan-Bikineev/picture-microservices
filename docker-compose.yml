@@ -1,0 +1,135 @@
+services:
+  db:
+    image: postgres:16.1-alpine
+    container_name: postgres-db
+    restart: always
+    env_file:
+      - .env
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    volumes:
+      - postgres-db-data:/var/lib/postgresql/data
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin
+    restart: always
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./pgadmin/pgadmin_setup.json:/pgadmin4/servers.json:ro
+
+  liquibase:
+    image: liquibase:alpine
+    container_name: liquibase
+    volumes:
+      - ./src/liquibase/db/changelog:/liquibase/changelog:ro
+      - ./src/liquibase/liquibase.properties:/liquibase/liquibase.properties
+    env_file:
+      - .env
+    command: [ "--defaults-file=/liquibase/liquibase.properties", "update" ]
+    depends_on:
+      db:
+        condition: service_healthy
+
+  user-service:
+    build: ./src/user-service/
+    container_name: user-service
+    hostname: user-service
+    restart: on-failure
+    env_file:
+      - .env
+    environment:
+      DB_HOST: db
+      SPRING_PROFILES_ACTIVE: prod
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8080/actuator/health" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    depends_on:
+      db:
+        condition: service_healthy
+
+  comment-service:
+    build: ./src/comment-service/
+    container_name: comment-service
+    hostname: comment-service
+    restart: on-failure
+    env_file:
+      - .env
+    environment:
+      DB_HOST: db
+      SPRING_PROFILES_ACTIVE: prod
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8080/actuator/health" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    depends_on:
+      db:
+        condition: service_healthy
+
+  image-service:
+    build: ./src/image-service/
+    container_name: image-service
+    hostname: image-service
+    restart: on-failure
+    env_file:
+      - .env
+    environment:
+      DB_HOST: db
+      SPRING_PROFILES_ACTIVE: prod
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8080/actuator/health" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    depends_on:
+      db:
+        condition: service_healthy
+
+  gateway-service:
+    build: ./src/gateway-service/
+    container_name: gateway-service
+    hostname: gateway-service
+    restart: on-failure
+    env_file:
+      - .env
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8080/actuator/health" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    depends_on:
+      user-service:
+        condition: service_healthy
+      comment-service:
+        condition: service_healthy
+      image-service:
+        condition: service_healthy
+
+  nginx-gateway:
+    image: nginx
+    container_name: nginx-gateway
+    restart: always
+    ports:
+      - "443:443"
+    depends_on:
+      gateway-service:
+        condition: service_healthy
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+
+volumes:
+  postgres-db-data:

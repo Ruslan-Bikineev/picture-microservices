@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+
+    <changeSet id="1-create-collections" author="RB">
+        <createTable tableName="collections" remarks="Коллекции изображений, принадлежащие пользователям">
+            <column name="id" type="BIGSERIAL" remarks="Идентификатор коллекции">
+                <constraints primaryKey="true"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="2-create-users" author="RB">
+        <createTable tableName="users" remarks="Пользователи системы">
+            <column name="id" type="BIGSERIAL" remarks="Идентификатор пользователя">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="username" type="VARCHAR(255)" remarks="Имя пользователя">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="password" type="VARCHAR(255)" remarks="Хеш пароля">
+                <constraints nullable="false"/>
+            </column>
+            <column name="collection_id" type="BIGINT" remarks="Ссылка на коллекцию пользователя"/>
+        </createTable>
+
+        <addForeignKeyConstraint
+                baseTableName="users"
+                baseColumnNames="collection_id"
+                constraintName="fk_user_collection"
+                referencedTableName="collections"
+                referencedColumnNames="id"
+                onDelete="SET NULL"/>
+    </changeSet>
+
+    <changeSet id="3-create-images" author="RB">
+        <createTable tableName="images" remarks="Загруженные изображения">
+            <column name="id" type="BIGSERIAL" remarks="Идентификатор изображения">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="user_id" type="BIGINT" remarks="ID пользователя, загрузившего изображение">
+                <constraints nullable="false"/>
+            </column>
+            <column name="image_base64" type="TEXT" remarks="Изображение в формате Base64">
+                <constraints nullable="false"/>
+            </column>
+            <column name="is_deleted" type="BOOLEAN" defaultValueBoolean="false" remarks="Признак удаления изображения"/>
+        </createTable>
+
+        <addForeignKeyConstraint
+                baseTableName="images"
+                baseColumnNames="user_id"
+                constraintName="fk_image_user"
+                referencedTableName="users"
+                referencedColumnNames="id"
+                onDelete="CASCADE"/>
+    </changeSet>
+
+    <changeSet id="4-create-collection-images" author="RB">
+        <createTable tableName="collection_images" remarks="Связь коллекций и изображений (многие-ко-многим)">
+            <column name="collection_id" type="BIGINT" remarks="ID коллекции">
+                <constraints nullable="false"/>
+            </column>
+            <column name="image_id" type="BIGINT" remarks="ID изображения">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addPrimaryKey
+                tableName="collection_images"
+                columnNames="collection_id, image_id"
+                constraintName="pk_collection_images"/>
+
+        <addForeignKeyConstraint
+                baseTableName="collection_images"
+                baseColumnNames="collection_id"
+                constraintName="fk_collection"
+                referencedTableName="collections"
+                referencedColumnNames="id"
+                onDelete="CASCADE"/>
+
+        <addForeignKeyConstraint
+                baseTableName="collection_images"
+                baseColumnNames="image_id"
+                constraintName="fk_collection_image"
+                referencedTableName="images"
+                referencedColumnNames="id"
+                onDelete="CASCADE"/>
+    </changeSet>
+
+    <changeSet id="5-create-comments" author="RB">
+        <createTable tableName="comments" remarks="Комментарии к изображениям">
+            <column name="id" type="BIGSERIAL" remarks="Идентификатор комментария">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="image_id" type="BIGINT" remarks="ID изображения, к которому относится комментарий">
+                <constraints nullable="false"/>
+            </column>
+            <column name="user_id" type="BIGINT" remarks="ID пользователя, написавшего комментарий">
+                <constraints nullable="false"/>
+            </column>
+            <column name="text" type="VARCHAR(255)" remarks="Текст комментария">
+                <constraints nullable="false"/>
+            </column>
+            <column name="is_deleted" type="BOOLEAN" defaultValueBoolean="false" remarks="Признак удаления комментария"/>
+        </createTable>
+
+        <addForeignKeyConstraint
+                baseTableName="comments"
+                baseColumnNames="image_id"
+                constraintName="fk_comment_image"
+                referencedTableName="images"
+                referencedColumnNames="id"
+                onDelete="CASCADE"/>
+
+        <addForeignKeyConstraint
+                baseTableName="comments"
+                baseColumnNames="user_id"
+                constraintName="fk_comment_user"
+                referencedTableName="users"
+                referencedColumnNames="id"
+                onDelete="CASCADE"/>
+    </changeSet>
+
+</databaseChangeLog>

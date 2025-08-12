@@ -1,0 +1,7 @@
+service:
+  url:
+    user-service: ${USER_SERVICE_URL}
+    image-service: ${IMAGE_SERVICE_URL}
+    comment-service: ${COMMENT_SERVICE_URL}
+server:
+  forward-headers-strategy: framework

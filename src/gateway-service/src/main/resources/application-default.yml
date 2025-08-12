@@ -1,0 +1,5 @@
+service:
+  url:
+    user-service: http://localhost:8080/api/v1/users
+    image-service: http://localhost:8081/api/v1/images
+    comment-service: http://localhost:8082/api/v1/images
