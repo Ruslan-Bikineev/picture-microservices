@@ -4,7 +4,6 @@ import edu.school21.dto.request.CollectionRqDto;
 import edu.school21.dto.request.UserRqDto;
 import edu.school21.dto.response.MessageRsDto;
 import edu.school21.dto.response.TokenRsDto;
-import edu.school21.dto.response.UserRsDto;
 import io.restassured.RestAssured;
 import org.springframework.http.HttpHeaders;
 
@@ -19,7 +18,7 @@ import static org.hamcrest.Matchers.notNullValue;
 public class UserHelper {
 
     public static MessageRsDto registerUser(final Integer port,
-                                         final UserRqDto userRqDto) {
+                                            final UserRqDto userRqDto) {
         return RestAssured.given()
                 .port(port)
                 .body(userRqDto)
@@ -27,7 +26,7 @@ public class UserHelper {
                 .post("/registration")
                 .then()
                 .statusCode(HTTP_CREATED)
-                .body("message", equalTo("User: %s successfully registered".formatted(userRqDto.getUsername())))
+                .body("message", equalTo("Пользователь: %s успешно зарегистрирован".formatted(userRqDto.getUsername())))
                 .extract()
                 .response()
                 .as(MessageRsDto.class);

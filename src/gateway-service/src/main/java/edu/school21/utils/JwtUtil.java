@@ -9,8 +9,8 @@ import java.util.Optional;
 @Component
 public class JwtUtil {
 
-    public String extractUserId(String BearerToken) {
-        String token = extractToken(BearerToken);
+    public String extractUserId(String bearerToken) {
+        String token = extractToken(bearerToken);
         DecodedJWT jwt = JWT.decode(token);
         return jwt.getSubject();
     }

@@ -137,8 +137,8 @@ public class CommentController {
             @PathVariable(name = "comment_id") Long commentId) {
         String token = request.getHeader(HttpHeaders.AUTHORIZATION);
         String userId = jwtUtil.extractUserId(token);
-        ImageRsDto imageById = imageServiceAdapter.getImageById(imageId);
-        if (!Objects.equals(imageById.getUserId(), Long.valueOf(userId))) {
+        CommentRsDto commentRsDto = commentServiceAdapter.getCommentByImageIdAndCommentId(imageId, commentId);
+        if (!Objects.equals(commentRsDto.getUserId(), Long.valueOf(userId))) {
             throw new UnauthorizedCommentDeletionException("Нельзя удалить чужой комментарий");
         } else {
             commentServiceAdapter.deletedComment(imageId, commentId);

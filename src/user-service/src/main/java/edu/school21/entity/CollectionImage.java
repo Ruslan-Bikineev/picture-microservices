@@ -1,5 +1,6 @@
 package edu.school21.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -12,13 +13,15 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Table
 @IdClass(CollectionImageId.class)
 @Entity(name = "collection_images")
-public class CollectionImage {
+public class CollectionImage implements Serializable {
     @Id
     @Column(name = "collection_id")
     private Long collectionId;
@@ -27,6 +30,7 @@ public class CollectionImage {
     @Column(name = "image_id")
     private Long imageId;
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "collection_id", insertable = false, updatable = false)
     private Collection collection;

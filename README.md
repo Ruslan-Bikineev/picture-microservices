@@ -11,6 +11,7 @@
     - [Доступ к API](#доступ-к-api)
     - [Доступ к pgAdmin](#доступ-к-pgadmin)
     - [Мониторинг](#мониторинг)
+- [Redis Insight](#redis-insight)
 - [Swagger документация](#swagger-документация)
 - [Описание API](#описание-api)
     - [Сервис Пользователей](#сервис-пользователей)
@@ -31,6 +32,8 @@
 - **Регистрация и авторизация пользователей** (JWT).
 - **Хранение изображений** в формате Base64.
 - **Добавление и удаление комментариев** к изображениям.
+- **Использование Redis** для кэширования данных в микросервисах **User Service**, **Image Service**, **Comment Service**.
+- **Redis Insight** для мониторинга и анализа Redis в рабочем режиме.
 - **Swagger UI** для ручного тестирования API.
 - **Паттерны отказоустойчивости**:
     - Circuit Breaker и Retry для GET-запросов.
@@ -92,6 +95,11 @@ docker compose up --build
 ### Мониторинг
 
 - По пути https://picture.ru/api/status доступен статус сервера Nginx.
+
+## Redis Insight
+
+Для мониторинга Redis используется Redis Insight.  
+Для доступа к Redis Insight UI используйте: https://picture.ru/redis-insight
 
 ## Swagger документация
 

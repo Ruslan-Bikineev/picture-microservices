@@ -33,6 +33,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/images")
 public class CommentController {
+
     private final MapperUtil mapperUtil;
     private final CommentService commentService;
 
@@ -53,9 +54,7 @@ public class CommentController {
     })
     @GetMapping("/{image_id}/comments")
     public List<CommentRsDto> getAllCommentsByImageId(@PathVariable("image_id") Long imageId) {
-        return commentService.findAllCommentsByImageId(imageId).stream()
-                .map(mapperUtil::toCommentRsDto)
-                .toList();
+        return commentService.findAllCommentsByImageId(imageId);
     }
 
     @Operation(summary = "Get comment by image id and comment id")
@@ -76,7 +75,7 @@ public class CommentController {
     @GetMapping("/{image_id}/comments/{comment_id}")
     public CommentRsDto getCommentByImageIdAndCommentId(@PathVariable("image_id") Long imageId,
                                                         @PathVariable("comment_id") Long commentId) {
-        Comment comment = commentService.findCommentsByImageIdAndUserId(imageId, commentId);
+        Comment comment = commentService.findCommentByImageIdAndUserId(imageId, commentId);
         return mapperUtil.toCommentRsDto(comment);
     }
 
