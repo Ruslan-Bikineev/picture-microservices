@@ -22,6 +22,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.persistence.EntityExistsException;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -46,6 +47,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Objects;
 
 @Tag(name = "User", description = "User operations")
 @Validated
@@ -77,8 +79,7 @@ public class UserController {
     })
     @GetMapping("/{user_id}/collections")
     public UserCollectionImageRsDto getUserCollections(@PathVariable("user_id") Long userId) {
-        Collection collection = userService.findById(userId).getCollection();
-        return mapperUtil.toUserCollectionImageRsDto(collection);
+        return userService.findUserCollection(userId);
     }
 
     @Operation(summary = "Get users with pagination")
@@ -105,9 +106,7 @@ public class UserController {
             @RequestParam(defaultValue = "0")
             @Min(value = 0, message = "must be positive")
             Integer offset) {
-        return userService.findAll(PageRequest.of(offset, limit)).stream()
-                .map(mapperUtil::toUserRsDto)
-                .toList();
+        return userService.findAll(PageRequest.of(offset, limit));
     }
 
     @Operation(summary = "Check authorization user")
@@ -141,8 +140,8 @@ public class UserController {
     public MessageRsDto registerUser(@Valid @RequestBody UserRqDto userRqDto) {
         User user = mapperUtil.toUser(userRqDto);
         user.setCollection(new Collection());
-        user = userService.save(user);
-        return mapperUtil.toMessageRsDto(user.getId(), "User: %s successfully registered".formatted(user.getUsername()));
+        UserRsDto userRsDto = userService.save(user);
+        return mapperUtil.toMessageRsDto(userRsDto.getId(), "Пользователь: %s успешно зарегистрирован".formatted(userRsDto.getUsername()));
     }
 
     @Operation(summary = "Authorization user")
@@ -166,7 +165,7 @@ public class UserController {
                 )
         );
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-        Long userId = userService.findIdByUsername(userDetails.getUsername());
+        long userId = userService.findByUsername(userDetails.getUsername()).getId();
         String jwt = jwtUtils.generateToken(userId);
         return new TokenRsDto(jwt);
     }
@@ -191,14 +190,16 @@ public class UserController {
     public CollectionRsDto postImageToUserCollection(
             @Valid @RequestBody CollectionRqDto collectionRqDto,
             @PathVariable("user_id") Long userId) {
-        User user = userService.findById(userId);
-        boolean isExist = userService.isImageInCollection(user, collectionRqDto.getImageId());
+        UserCollectionImageRsDto userCollection = userService.findUserCollection(userId);
+        userService.findUserCollection(userId);
+        boolean isExist = userCollection.getImagesId().stream()
+                .anyMatch(imageId -> Objects.equals(imageId, collectionRqDto.getImageId()));
         if (isExist) {
-            throw new EntityExistsException("Указанный image: %s уже существует в коллекции пользователя"
+            throw new EntityExistsException("Указанный imageId: %s уже существует в коллекции пользователя"
                     .formatted(collectionRqDto.getImageId()));
         } else {
-            CollectionImage collectionImage = mapperUtil.toCollectionImage(collectionRqDto, user.getCollection().getId());
-            collectionImage = collectionImageService.save(collectionImage);
+            CollectionImage collectionImage = mapperUtil.toCollectionImage(collectionRqDto, userCollection.getCollectionId());
+            collectionImage = collectionImageService.save(collectionImage, userId);
             return mapperUtil.toCollectionRsDto(collectionImage);
         }
     }
@@ -224,7 +225,12 @@ public class UserController {
     public void deleteImageInUserCollection(
             @Valid @RequestBody CollectionRqDto collectionRqDto,
             @PathVariable("user_id") Long userId) {
-        CollectionImage image = userService.findImageInCollectionByImageId(userId, collectionRqDto.getImageId());
-        collectionImageService.delete(image);
+        UserCollectionImageRsDto userCollection = userService.findUserCollection(userId);
+        long existImageId = userCollection.getImagesId().stream()
+                .filter(imageId -> Objects.equals(imageId, collectionRqDto.getImageId()))
+                .findFirst()
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Изображение с ID " + collectionRqDto.getImageId() + " не найдено в коллекции пользователя c ID " + userId));
+        collectionImageService.delete(userCollection.getCollectionId(), existImageId, userId);
     }
 }

@@ -34,6 +34,15 @@ public class CommentServiceAdapter {
                 .block();
     }
 
+    public CommentRsDto getCommentByImageIdAndCommentId(Long imageId, Long commentId) {
+        return webClient
+                .method(HttpMethod.GET)
+                .uri("/{image_id}/comments/{comment_id}", imageId, commentId)
+                .retrieve()
+                .bodyToMono(CommentRsDto.class)
+                .block();
+    }
+
     public CommentRsDto addedComment(Long imageId, CommentRqDto commentRqDto) {
         return webClient
                 .method(HttpMethod.POST)

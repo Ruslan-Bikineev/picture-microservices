@@ -6,6 +6,7 @@ import edu.school21.dto.request.UserRqDto;
 import edu.school21.dto.response.TokenRsDto;
 import edu.school21.dto.response.UserCollectionImageRsDto;
 import edu.school21.dto.response.UserRsDto;
+import edu.school21.entity.Collection;
 import edu.school21.entity.CollectionImage;
 import edu.school21.entity.User;
 import edu.school21.utils.UserHelper;
@@ -140,7 +141,7 @@ class UserControllerTest extends ApplicationTests {
                 .then()
                 .statusCode(HTTP_BAD_REQUEST)
                 .body("path", endsWith("/api/v1/users/registration"),
-                        "message", equalTo("User with username: %s already exists".formatted(userRqDto.getUsername())),
+                        "message", equalTo("Пользователь с username %s уже существует".formatted(userRqDto.getUsername())),
                         "code", equalTo(HTTP_BAD_REQUEST));
         userRepository.findByUsername(userRqDto.getUsername())
                 .map(User::getId)
@@ -301,8 +302,10 @@ class UserControllerTest extends ApplicationTests {
                     .extract()
                     .response()
                     .as(UserCollectionImageRsDto.class);
-            List<Long> expectedImageIds = userService.findById(userId).getCollection()
-                    .getImages().stream()
+            List<Long> expectedImageIds = userRepository.findById(userId)
+                    .map(User::getCollection)
+                    .map(Collection::getImages).stream()
+                    .flatMap(List::stream)
                     .map(CollectionImage::getImageId)
                     .toList();
             sA.assertThat(userCollectionImageRsDto.getImagesId()).isEqualTo(expectedImageIds);

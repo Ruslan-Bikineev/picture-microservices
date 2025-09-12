@@ -1,69 +1,73 @@
 package edu.school21.service;
 
-import edu.school21.entity.CollectionImage;
+import edu.school21.constants.CacheNames;
+import edu.school21.dto.response.UserCollectionImageRsDto;
+import edu.school21.dto.response.UserRsDto;
 import edu.school21.entity.User;
 import edu.school21.repository.UserRepository;
+import edu.school21.utils.MapperUtil;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.Objects;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Service
 public class UserService {
+
+    private final MapperUtil mapperUtil;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public Page<User> findAll(Pageable pageable) {
-        return userRepository.findAll(pageable);
+    @Cacheable(cacheNames = CacheNames.USERS, key = "#pageable.pageNumber + '-' + #pageable.pageSize")
+    public List<UserRsDto> findAll(Pageable pageable) {
+        return userRepository.findAll(pageable).stream()
+                .map(mapperUtil::toUserRsDto)
+                .collect(Collectors.toList());
     }
 
-    public User findById(Long id) {
-        return userRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("User with id: %s not found".formatted(id)));
+    @Cacheable(cacheNames = CacheNames.USER_COLLECTION, key = "#userId")
+    public UserCollectionImageRsDto findUserCollection(long userId) {
+        return userRepository.findById(userId)
+                .map(User::getCollection)
+                .map(mapperUtil::toUserCollectionImageRsDto)
+                .orElseThrow(() -> new EntityNotFoundException("Коллекция пользователя с ID " + userId + " не была найдена"));
     }
 
-    public CollectionImage findImageInCollectionByImageId(Long userId, Long imagId) {
-        return findById(userId)
-                .getCollection()
-                .getImages()
-                .stream()
-                .filter(c -> Objects.equals(c.getImageId(), imagId))
-                .findFirst()
-                .orElseThrow(() -> new EntityNotFoundException(
-                        "Изображение с ID " + imagId + " не найдено в коллекции пользователя " + userId));
-    }
-
-    public Long findIdByUsername(String username) {
-        User user = findByUsername(username);
-        return user.getId();
-    }
-
-    private User findByUsername(String username) {
+    @Cacheable(cacheNames = CacheNames.USER_BY_USERNAME, key = "#username")
+    public UserRsDto findByUsername(String username) {
         return userRepository.findByUsername(username)
-                .orElseThrow(() -> new EntityNotFoundException("User with username: %s not found".formatted(username)));
+                .map(mapperUtil::toUserRsDto)
+                .orElseThrow(() -> new EntityNotFoundException("Пользователь с username %s не был найден".formatted(username)));
     }
 
-    public User save(User user) {
+    @Caching(
+            evict = {
+                    @CacheEvict(cacheNames = CacheNames.USERS, allEntries = true),
+            },
+            put = {
+                    @CachePut(cacheNames = CacheNames.USER_BY_USERNAME, key = "#result.username"),
+            })
+    public UserRsDto save(User user) {
         checkExistUserByUsername(user.getUsername());
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        return userRepository.save(user);
-    }
-
-    public boolean isImageInCollection(User user, Long imageId) {
-        return user.getCollection()
-                .getImages().stream()
-                .anyMatch(i -> Objects.equals(i.getImageId(), imageId));
+        user = userRepository.save(user);
+        return mapperUtil.toUserRsDto(user);
     }
 
     private void checkExistUserByUsername(String username) {
         if (userRepository.existsUserByUsername(username)) {
-            throw new EntityExistsException("User with username: %s already exists".formatted(username));
+            throw new EntityExistsException("Пользователь с username %s уже существует".formatted(username));
         }
     }
 }
+

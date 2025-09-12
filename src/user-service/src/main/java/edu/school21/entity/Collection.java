@@ -12,6 +12,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
 import java.util.List;
 
 @Data
@@ -19,7 +20,7 @@ import java.util.List;
 @AllArgsConstructor
 @Table
 @Entity(name = "collections")
-public class Collection {
+public class Collection implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
