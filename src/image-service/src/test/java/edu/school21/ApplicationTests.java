@@ -6,11 +6,21 @@ import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.http.ContentType;
 import net.datafaker.Faker;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.ActiveProfiles;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
-@SpringBootTest
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+@Testcontainers
+@DirtiesContext
+@ActiveProfiles("test")
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class ApplicationTests {
 
     protected static Faker faker = new Faker();
@@ -22,10 +32,16 @@ public class ApplicationTests {
     protected ImageRepository imageRepository;
 
     @BeforeAll
-    public static void init() {
+    static void init() {
         RestAssured.requestSpecification = new RequestSpecBuilder()
                 .setContentType(ContentType.JSON)
                 .setBaseUri("http://localhost/api/v1/images")
                 .build();
+    }
+
+    @Test
+    @DisplayName("Context loads")
+    void contextLoads() {
+        assertTrue(true);
     }
 }
