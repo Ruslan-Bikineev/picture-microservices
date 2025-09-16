@@ -43,6 +43,7 @@ dependencies {
     implementation(platform("org.testcontainers:testcontainers-bom:$testcontainersVersion"))
 
     runtimeOnly("org.postgresql:postgresql")
+    runtimeOnly("io.micrometer:micrometer-registry-prometheus")
 
     compileOnly("org.projectlombok:lombok")
 

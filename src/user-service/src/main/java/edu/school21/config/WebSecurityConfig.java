@@ -47,7 +47,8 @@ public class WebSecurityConfig {
                                         "/api/v1/users/authorization",
                                         "/swagger/**",
                                         "/api-docs/**",
-                                        "/actuator/health").permitAll()
+                                        "/actuator/health",
+                                        "/actuator/prometheus").permitAll()
                                 .anyRequest().authenticated()
                 );
         http.addFilterBefore(authTokenFilter, UsernamePasswordAuthenticationFilter.class);

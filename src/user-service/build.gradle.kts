@@ -43,6 +43,7 @@ dependencies {
     runtimeOnly("org.postgresql:postgresql")
     runtimeOnly("io.jsonwebtoken:jjwt-jackson:$jsonwebtokenVersion")
     runtimeOnly("io.jsonwebtoken:jjwt-impl:$jsonwebtokenVersion")
+    runtimeOnly("io.micrometer:micrometer-registry-prometheus")
 
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     testImplementation("org.testcontainers:postgresql")

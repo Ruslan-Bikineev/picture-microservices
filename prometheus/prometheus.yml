@@ -1,0 +1,38 @@
+global:
+  scrape_interval: 5s
+  evaluation_interval: 5s
+  scrape_timeout: 4s
+
+scrape_configs:
+  # Сам Prometheus
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["prometheus:9090"]
+
+  # User Service
+  - job_name: "user-service"
+    metrics_path: "/actuator/prometheus"
+    scrape_interval: 5s
+    static_configs:
+      - targets: ["user-service:8080"]
+
+  # Comment Service
+  - job_name: "comment-service"
+    metrics_path: "/actuator/prometheus"
+    scrape_interval: 5s
+    static_configs:
+      - targets: ["comment-service:8080"]
+
+  # Image Service
+  - job_name: "image-service"
+    metrics_path: "/actuator/prometheus"
+    scrape_interval: 5s
+    static_configs:
+      - targets: ["image-service:8080"]
+
+  # Gateway Service
+  - job_name: "gateway-service"
+    metrics_path: "/actuator/prometheus"
+    scrape_interval: 5s
+    static_configs:
+      - targets: ["gateway-service:8080"]
