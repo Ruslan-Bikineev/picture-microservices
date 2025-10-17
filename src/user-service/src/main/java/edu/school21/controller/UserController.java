@@ -1,9 +1,9 @@
 package edu.school21.controller;
 
+import edu.school21.annotation.GeneralApiResponses;
 import edu.school21.dto.request.CollectionRqDto;
 import edu.school21.dto.request.UserRqDto;
 import edu.school21.dto.response.CollectionRsDto;
-import edu.school21.dto.response.ErrorInfoRsDto;
 import edu.school21.dto.response.MessageRsDto;
 import edu.school21.dto.response.TokenRsDto;
 import edu.school21.dto.response.UserCollectionImageRsDto;
@@ -15,12 +15,6 @@ import edu.school21.service.CollectionImageService;
 import edu.school21.service.UserService;
 import edu.school21.utils.JwtUtil;
 import edu.school21.utils.MapperUtil;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
@@ -49,7 +43,6 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 import java.util.Objects;
 
-@Tag(name = "User", description = "User operations")
 @Validated
 @RequiredArgsConstructor
 @RestController
@@ -62,41 +55,13 @@ public class UserController {
     private final CollectionImageService collectionImageService;
     private final AuthenticationManager authenticationManager;
 
-    @Operation(summary = "Get all user collection by user id")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Ok",
-                    content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = UserCollectionImageRsDto.class))
-                    }),
-            @ApiResponse(responseCode = "400", description = "Bad request",
-                    content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorInfoRsDto.class))
-                    }),
-            @ApiResponse(responseCode = "401", description = "Unauthorized",
-                    content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorInfoRsDto.class))
-                    })
-    })
+    @GeneralApiResponses(summary = "Get all user collection by user id")
     @GetMapping("/{user_id}/collections")
     public UserCollectionImageRsDto getUserCollections(@PathVariable("user_id") Long userId) {
         return userService.findUserCollection(userId);
     }
 
-    @Operation(summary = "Get users with pagination")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Ok",
-                    content = {@Content(mediaType = "application/json",
-                            schema = @Schema(type = "array", implementation = UserRsDto.class))
-                    }),
-            @ApiResponse(responseCode = "400", description = "Bad request",
-                    content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorInfoRsDto.class))
-                    }),
-            @ApiResponse(responseCode = "401", description = "Unauthorized",
-                    content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorInfoRsDto.class))
-                    })
-    })
+    @GeneralApiResponses(summary = "Get users with pagination")
     @GetMapping
     public List<UserRsDto> getUsers(
             @RequestParam(defaultValue = "10")
@@ -109,14 +74,7 @@ public class UserController {
         return userService.findAll(PageRequest.of(offset, limit));
     }
 
-    @Operation(summary = "Check authorization user")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "204", description = "Ok"),
-            @ApiResponse(responseCode = "401", description = "Unauthorized",
-                    content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorInfoRsDto.class))
-                    })
-    })
+    @GeneralApiResponses(summary = "Check authorization user")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @GetMapping("/authorization")
     public void isUserAuthorize(@RequestHeader(HttpHeaders.AUTHORIZATION) String token) {
@@ -124,17 +82,7 @@ public class UserController {
         jwtUtils.validateJwtToken(jwt);
     }
 
-    @Operation(summary = "Registration user")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "Created",
-                    content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = MessageRsDto.class))
-                    }),
-            @ApiResponse(responseCode = "400", description = "Bad request",
-                    content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorInfoRsDto.class))
-                    })
-    })
+    @GeneralApiResponses(summary = "Registration user")
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/registration")
     public MessageRsDto registerUser(@Valid @RequestBody UserRqDto userRqDto) {
@@ -144,17 +92,7 @@ public class UserController {
         return mapperUtil.toMessageRsDto(userRsDto.getId(), "Пользователь: %s успешно зарегистрирован".formatted(userRsDto.getUsername()));
     }
 
-    @Operation(summary = "Authorization user")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Ok",
-                    content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = TokenRsDto.class))
-                    }),
-            @ApiResponse(responseCode = "400", description = "Bad request",
-                    content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorInfoRsDto.class))
-                    })
-    })
+    @GeneralApiResponses(summary = "Authorization user")
     @PostMapping("/authorization")
     public TokenRsDto authorizeUser(@Valid @RequestBody UserRqDto userRqDto) {
         User user = mapperUtil.toUser(userRqDto);
@@ -170,21 +108,7 @@ public class UserController {
         return new TokenRsDto(jwt);
     }
 
-    @Operation(summary = "Added image in user collection")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "Created",
-                    content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = CollectionRsDto.class))
-                    }),
-            @ApiResponse(responseCode = "400", description = "Bad request",
-                    content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorInfoRsDto.class))
-                    }),
-            @ApiResponse(responseCode = "401", description = "Unauthorized",
-                    content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorInfoRsDto.class))
-                    })
-    })
+    @GeneralApiResponses(summary = "Added image in user collection")
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/{user_id}/collections")
     public CollectionRsDto postImageToUserCollection(
@@ -204,22 +128,7 @@ public class UserController {
         }
     }
 
-    @Operation(summary = "Delete image in user collection")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "204", description = "No content"),
-            @ApiResponse(responseCode = "400", description = "Bad request",
-                    content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorInfoRsDto.class))
-                    }),
-            @ApiResponse(responseCode = "401", description = "Unauthorized",
-                    content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorInfoRsDto.class))
-                    }),
-            @ApiResponse(responseCode = "404", description = "Not found",
-                    content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorInfoRsDto.class))
-                    })
-    })
+    @GeneralApiResponses(summary = "Delete image in user collection")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteMapping("/{user_id}/collections")
     public void deleteImageInUserCollection(

@@ -3,20 +3,13 @@ package edu.school21.controller;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import edu.school21.adapters.CommentServiceAdapter;
 import edu.school21.adapters.ImageServiceAdapter;
+import edu.school21.annotation.GeneralApiResponses;
 import edu.school21.dto.request.CommentRqDto;
 import edu.school21.dto.response.CommentRsDto;
-import edu.school21.dto.response.ErrorInfoRsDto;
-import edu.school21.dto.response.ImageRsDto;
 import edu.school21.exception.UnauthorizedCommentDeletionException;
 import edu.school21.utils.JwtUtil;
 import edu.school21.utils.MapperUtil;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -39,7 +32,6 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import java.util.List;
 import java.util.Objects;
 
-@Tag(name = "Comment", description = "Comment operations")
 @Validated
 @RequiredArgsConstructor
 @RestController
@@ -51,25 +43,7 @@ public class CommentController {
     private final ImageServiceAdapter imageServiceAdapter;
     private final CommentServiceAdapter commentServiceAdapter;
 
-    @Operation(summary = "Get all comments by image id")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Ok",
-                    content = {@Content(mediaType = "application/json",
-                            schema = @Schema(type = "array", implementation = CommentRsDto.class))
-                    }),
-            @ApiResponse(responseCode = "400", description = "Bad request",
-                    content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorInfoRsDto.class))
-                    }),
-            @ApiResponse(responseCode = "401", description = "Unauthorized",
-                    content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorInfoRsDto.class))
-                    }),
-            @ApiResponse(responseCode = "404", description = "Not found",
-                    content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorInfoRsDto.class))
-                    })
-    })
+    @GeneralApiResponses(summary = "Get all comments by image id")
     @Retryable(retryFor = {WebClientResponseException.TooManyRequests.class,
             WebClientResponseException.ServiceUnavailable.class,
             WebClientResponseException.GatewayTimeout.class},
@@ -80,25 +54,7 @@ public class CommentController {
         return commentServiceAdapter.getAllCommentsByImageId(imageId);
     }
 
-    @Operation(summary = "Add comment")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "Created",
-                    content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = CommentRsDto.class))
-                    }),
-            @ApiResponse(responseCode = "400", description = "Bad request",
-                    content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorInfoRsDto.class))
-                    }),
-            @ApiResponse(responseCode = "401", description = "Unauthorized",
-                    content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorInfoRsDto.class))
-                    }),
-            @ApiResponse(responseCode = "404", description = "Not found",
-                    content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorInfoRsDto.class))
-                    })
-    })
+    @GeneralApiResponses(summary = "Add comment")
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/{image_id}/comments")
     public CommentRsDto addedComment(
@@ -113,22 +69,7 @@ public class CommentController {
         return commentServiceAdapter.addedComment(imageId, commentRqDto);
     }
 
-    @Operation(summary = "Delete comment")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "204", description = "No content"),
-            @ApiResponse(responseCode = "400", description = "Bad request",
-                    content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorInfoRsDto.class))
-                    }),
-            @ApiResponse(responseCode = "401", description = "Unauthorized",
-                    content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorInfoRsDto.class))
-                    }),
-            @ApiResponse(responseCode = "404", description = "Not found",
-                    content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorInfoRsDto.class))
-                    })
-    })
+    @GeneralApiResponses(summary = "Delete comment")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteMapping("/{image_id}/comments/{comment_id}")
     public void deletedComment(
