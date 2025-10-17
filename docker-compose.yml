@@ -34,7 +34,10 @@ services:
       - ./src/liquibase/liquibase.properties:/liquibase/liquibase.properties
     env_file:
       - .env
-    command: [ "--defaults-file=/liquibase/liquibase.properties", "update" ]
+    entrypoint: ["/bin/sh", "-c"]
+    command: >
+      "lpm add postgresql --global &&
+       liquibase --defaults-file=/liquibase/liquibase.properties update"
     depends_on:
       db:
         condition: service_healthy

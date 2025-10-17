@@ -3,22 +3,16 @@ package edu.school21.controller;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import edu.school21.adapters.ImageServiceAdapter;
 import edu.school21.adapters.UserServiceAdapter;
+import edu.school21.annotation.GeneralApiResponses;
 import edu.school21.dto.request.CollectionRqDto;
 import edu.school21.dto.request.ImageRqDto;
 import edu.school21.dto.response.CollectionRsDto;
-import edu.school21.dto.response.ErrorInfoRsDto;
 import edu.school21.dto.response.ImageRsDto;
 import edu.school21.dto.response.UserCollectionImageRsDto;
 import edu.school21.dto.response.UserRsDto;
 import edu.school21.utils.JwtUtil;
 import edu.school21.utils.MapperUtil;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
@@ -43,7 +37,6 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 
 import java.util.List;
 
-@Tag(name = "User", description = "User operations")
 @Validated
 @RequiredArgsConstructor
 @RestController
@@ -55,25 +48,7 @@ public class UserController {
     private final UserServiceAdapter userServiceAdapter;
     private final ImageServiceAdapter imageServiceAdapter;
 
-    @Operation(summary = "Save image to collection")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "Created",
-                    content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = CollectionRsDto.class))
-                    }),
-            @ApiResponse(responseCode = "400", description = "Bad request",
-                    content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorInfoRsDto.class))
-                    }),
-            @ApiResponse(responseCode = "401", description = "Unauthorized",
-                    content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorInfoRsDto.class))
-                    }),
-            @ApiResponse(responseCode = "404", description = "Not found",
-                    content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorInfoRsDto.class))
-                    })
-    })
+    @GeneralApiResponses(summary = "Save image to collection")
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/me/collections")
     public CollectionRsDto addedImage(
@@ -93,25 +68,7 @@ public class UserController {
         }
     }
 
-    @Operation(summary = "Get user collection")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Ok",
-                    content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = UserCollectionImageRsDto.class))
-                    }),
-            @ApiResponse(responseCode = "400", description = "Bad request",
-                    content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorInfoRsDto.class))
-                    }),
-            @ApiResponse(responseCode = "401", description = "Unauthorized",
-                    content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorInfoRsDto.class))
-                    }),
-            @ApiResponse(responseCode = "404", description = "Not found",
-                    content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorInfoRsDto.class))
-                    })
-    })
+    @GeneralApiResponses(summary = "Get user collection")
     @Retryable(retryFor = {WebClientResponseException.TooManyRequests.class,
             WebClientResponseException.ServiceUnavailable.class,
             WebClientResponseException.GatewayTimeout.class},
@@ -125,25 +82,7 @@ public class UserController {
         return userServiceAdapter.getUserCollection(token, userId);
     }
 
-    @Operation(summary = "Get users")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Ok",
-                    content = {@Content(mediaType = "application/json",
-                            schema = @Schema(type = "array", implementation = UserRsDto.class))
-                    }),
-            @ApiResponse(responseCode = "400", description = "Bad request",
-                    content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorInfoRsDto.class))
-                    }),
-            @ApiResponse(responseCode = "401", description = "Unauthorized",
-                    content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorInfoRsDto.class))
-                    }),
-            @ApiResponse(responseCode = "404", description = "Not found",
-                    content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorInfoRsDto.class))
-                    })
-    })
+    @GeneralApiResponses(summary = "Get users")
     @Retryable(retryFor = {WebClientResponseException.TooManyRequests.class,
             WebClientResponseException.ServiceUnavailable.class,
             WebClientResponseException.GatewayTimeout.class},
@@ -163,22 +102,7 @@ public class UserController {
         return userServiceAdapter.getUsers(token, limit, offset);
     }
 
-    @Operation(summary = "Delete image from user collection")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "204", description = "No content"),
-            @ApiResponse(responseCode = "400", description = "Bad request",
-                    content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorInfoRsDto.class))
-                    }),
-            @ApiResponse(responseCode = "401", description = "Unauthorized",
-                    content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorInfoRsDto.class))
-                    }),
-            @ApiResponse(responseCode = "404", description = "Not found",
-                    content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorInfoRsDto.class))
-                    })
-    })
+    @GeneralApiResponses(summary = "Delete image from user collection")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteMapping("/me/collections")
     public void deleteImage(
