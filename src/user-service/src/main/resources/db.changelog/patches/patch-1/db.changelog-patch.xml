@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.5.xsd">
+
+    <changeSet id="1-create-collections" author="RB">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="collections"/>
+            </not>
+        </preConditions>
+
+        <createTable tableName="collections" remarks="Коллекции изображений, принадлежащие пользователям">
+            <column name="id" type="BIGSERIAL" remarks="Идентификатор коллекции">
+                <constraints primaryKey="true"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="2-create-users" author="RB">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="users"/>
+            </not>
+        </preConditions>
+
+        <createTable tableName="users" remarks="Пользователи системы">
+            <column name="id" type="BIGSERIAL" remarks="Идентификатор пользователя">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="username" type="VARCHAR(255)" remarks="Имя пользователя">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="password" type="VARCHAR(255)" remarks="Хеш пароля">
+                <constraints nullable="false"/>
+            </column>
+            <column name="collection_id" type="BIGINT" remarks="Ссылка на коллекцию пользователя"/>
+        </createTable>
+
+        <addForeignKeyConstraint
+                baseTableName="users"
+                baseColumnNames="collection_id"
+                constraintName="fk_user_collection"
+                referencedTableName="collections"
+                referencedColumnNames="id"
+                onDelete="SET NULL"/>
+    </changeSet>
+
+    <changeSet id="3-create-collection-images" author="RB">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="collection_images"/>
+            </not>
+        </preConditions>
+
+        <createTable tableName="collection_images" remarks="Связь коллекций и изображений (многие-ко-многим)">
+            <column name="collection_id" type="BIGINT" remarks="ID коллекции">
+                <constraints nullable="false"/>
+            </column>
+            <column name="image_id" type="BIGINT" remarks="ID изображения">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addPrimaryKey
+                tableName="collection_images"
+                columnNames="collection_id, image_id"
+                constraintName="pk_collection_images"/>
+
+        <addForeignKeyConstraint
+                baseTableName="collection_images"
+                baseColumnNames="collection_id"
+                constraintName="fk_collection"
+                referencedTableName="collections"
+                referencedColumnNames="id"
+                onDelete="CASCADE"/>
+    </changeSet>
+
+</databaseChangeLog>

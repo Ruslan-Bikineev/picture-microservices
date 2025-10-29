@@ -1,6 +1,9 @@
 spring:
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://${DB_HOST}:${POSTGRESQL_PORT}/${POSTGRES_DB}
+    url: jdbc:postgresql://${DB_HOST}:${POSTGRESQL_PORT}/${POSTGRES_IMAGE_DB}
     username: ${POSTGRES_USER}
     password: ${POSTGRES_PASSWORD}
+  liquibase:
+    change-log: classpath:db.changelog/db.changelog-patches.xml
+    enabled: true

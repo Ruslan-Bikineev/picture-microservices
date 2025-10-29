@@ -1,9 +1,12 @@
 spring:
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5435/DB
+    url: jdbc:postgresql://localhost:5435/image_service
     username: postgres
     password: postgres
+  liquibase:
+    change-log: classpath:db.changelog/db.changelog-patches.xml
+    enabled: true
 logging:
   level:
     org:

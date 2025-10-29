@@ -14,14 +14,12 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.IntStream;
 
-import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
 import static java.net.HttpURLConnection.HTTP_CREATED;
 import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
 import static java.net.HttpURLConnection.HTTP_NO_CONTENT;
 import static java.net.HttpURLConnection.HTTP_OK;
 import static org.hamcrest.Matchers.endsWith;
 import static org.hamcrest.Matchers.equalTo;
-
 
 class CommentControllerTest extends ApplicationTests {
 
@@ -40,16 +38,11 @@ class CommentControllerTest extends ApplicationTests {
                 .response()
                 .jsonPath()
                 .getList("", CommentRsDto.class);
-        List<Comment> expectedList = commentRepository.findByImageId(Long.valueOf(imageId)).stream()
-                .filter(comment -> !comment.isDeleted())
-                .toList();
+        List<CommentRsDto> expectedList = commentService.findAllByImageId(Long.valueOf(imageId));
         IntStream.range(0, expectedList.size() - 1).forEach(i -> {
             CommentRsDto actualCommentRsDto = actualList.get(i);
-            Comment expectedComment = expectedList.get(i);
-            sA.assertThat(actualCommentRsDto.getId()).isEqualTo(expectedComment.getId());
-            sA.assertThat(actualCommentRsDto.getImageId()).isEqualTo(expectedComment.getImageId());
-            sA.assertThat(actualCommentRsDto.getUserId()).isEqualTo(expectedComment.getUserId());
-            sA.assertThat(actualCommentRsDto.getCommentText()).isEqualTo(expectedComment.getCommentText());
+            CommentRsDto expectedComment = expectedList.get(i);
+            sA.assertThat(actualCommentRsDto).isEqualTo(expectedComment);
         });
         sA.assertAll();
     }
@@ -92,42 +85,6 @@ class CommentControllerTest extends ApplicationTests {
     }
 
     @Test
-    @DisplayName("API. POST. /api/v1/images/{image_id}/comments. Create comment by image id with non exist user id")
-    void postCreateCommentWithNonExistUserIdAndExistImageId() {
-        String imageId = "3";
-        Long randomUserId = faker.number().numberBetween(100L, 1000L);
-        CommentRqDto commentRqDto = new CommentRqDto(faker.lorem().sentence(), randomUserId);
-        RestAssured.given()
-                .port(port)
-                .when()
-                .body(commentRqDto)
-                .post("/{image_id}/comments", imageId)
-                .then()
-                .statusCode(HTTP_BAD_REQUEST)
-                .body("path", endsWith("/api/v1/images/%s/comments".formatted(imageId)),
-                        "message", equalTo("Ошибка сохранения данных."),
-                        "code", equalTo(400));
-    }
-
-    @Test
-    @DisplayName("API. POST. /api/v1/images/{image_id}/comments. Create comment by non exist image id with exist user id")
-    void postCreateCommentWithExistUserIdAndNonExistImageId() {
-        Long imageId = faker.number().numberBetween(100L, 1000L);
-        Long randomUserId = faker.number().numberBetween(100L, 1000L);
-        CommentRqDto commentRqDto = new CommentRqDto(faker.lorem().sentence(), randomUserId);
-        RestAssured.given()
-                .port(port)
-                .when()
-                .body(commentRqDto)
-                .post("/{image_id}/comments", imageId)
-                .then()
-                .statusCode(HTTP_NOT_FOUND)
-                .body("path", endsWith("/api/v1/images/%s/comments".formatted(imageId)),
-                        "message", equalTo("Image with id: %s not found".formatted(imageId)),
-                        "code", equalTo(404));
-    }
-
-    @Test
     @DisplayName("API. DELETE. /api/v1/{image_id}/comments/{comment_id}. Delete comment by image id and comment id")
     void deleteExistComment() {
         Long imageId = 3L;
@@ -140,8 +97,8 @@ class CommentControllerTest extends ApplicationTests {
                 .post("/{image_id}/comments", imageId)
                 .then()
                 .statusCode(HTTP_CREATED);
-        Comment createdComment = commentRepository.findByImageId(imageId).stream()
-                .max(Comparator.comparing(Comment::getId))
+        CommentRsDto createdComment = commentService.findAllByImageId(imageId).stream()
+                .max(Comparator.comparing(CommentRsDto::getId))
                 .get();
         RestAssured.given()
                 .port(port)

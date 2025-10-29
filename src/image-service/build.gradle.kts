@@ -38,6 +38,7 @@ dependencies {
 	implementation("org.mapstruct:mapstruct:$mapstructVersion")
 	implementation("net.datafaker:datafaker:$dataFakerVersion")
 	implementation("org.springframework.boot:spring-boot-starter-actuator")
+    implementation("org.liquibase:liquibase-core")
     implementation(platform("org.testcontainers:testcontainers-bom:$testcontainersVersion"))
 
 
