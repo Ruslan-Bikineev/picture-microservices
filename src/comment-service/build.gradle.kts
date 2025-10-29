@@ -40,6 +40,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("net.datafaker:datafaker:$dataFakerVersion")
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
+    implementation("org.liquibase:liquibase-core")
     implementation(platform("org.testcontainers:testcontainers-bom:$testcontainersVersion"))
 
     runtimeOnly("org.postgresql:postgresql")
