@@ -1,6 +1,7 @@
 package edu.school21;
 
 import edu.school21.repository.UserRepository;
+import edu.school21.utils.BaseTestContainers;
 import io.restassured.RestAssured;
 import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.http.ContentType;
@@ -12,23 +13,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
-import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.utility.DockerImageName;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-
-@Testcontainers
-@DirtiesContext
 @ActiveProfiles("test")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class ApplicationTests {
+public class ApplicationTests extends BaseTestContainers {
 
     protected static Faker faker = new Faker();
 
@@ -47,17 +38,6 @@ public class ApplicationTests {
                 .setContentType(ContentType.JSON)
                 .setBaseUri("http://localhost/api/v1/users")
                 .build();
-    }
-
-    @Container
-    private static final GenericContainer<?> redis =
-            new GenericContainer<>(DockerImageName.parse("redis:alpine"))
-                    .withExposedPorts(6379);
-
-    @DynamicPropertySource
-    static void redisProperties(DynamicPropertyRegistry registry) {
-        registry.add("spring.data.redis.host", redis::getHost);
-        registry.add("spring.data.redis.port", () -> redis.getMappedPort(6379).toString());
     }
 
     @Test

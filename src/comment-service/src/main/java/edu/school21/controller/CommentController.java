@@ -33,14 +33,14 @@ public class CommentController {
     @GeneralApiResponses(summary = "Get all comments by image id")
     @GetMapping("/{image_id}/comments")
     public List<CommentRsDto> getAllCommentsByImageId(@PathVariable("image_id") Long imageId) {
-        return commentService.findAllCommentsByImageId(imageId);
+        return commentService.findAllByImageId(imageId);
     }
 
     @GeneralApiResponses(summary = "Get comment by image id and comment id")
     @GetMapping("/{image_id}/comments/{comment_id}")
     public CommentRsDto getCommentByImageIdAndCommentId(@PathVariable("image_id") Long imageId,
                                                         @PathVariable("comment_id") Long commentId) {
-        Comment comment = commentService.findCommentByImageIdAndUserId(imageId, commentId);
+        Comment comment = commentService.findByIdAndImageId(commentId, imageId);
         return mapperUtil.toCommentRsDto(comment);
     }
 

@@ -16,6 +16,7 @@ import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -29,6 +30,7 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
 
     @Cacheable(cacheNames = CacheNames.USERS, key = "#pageable.pageNumber + '-' + #pageable.pageSize")
+    @Transactional(readOnly = true)
     public List<UserRsDto> findAll(Pageable pageable) {
         return userRepository.findAll(pageable).stream()
                 .map(mapperUtil::toUserRsDto)
@@ -36,6 +38,7 @@ public class UserService {
     }
 
     @Cacheable(cacheNames = CacheNames.USER_COLLECTION, key = "#userId")
+    @Transactional(readOnly = true)
     public UserCollectionImageRsDto findUserCollection(long userId) {
         return userRepository.findById(userId)
                 .map(User::getCollection)
@@ -44,6 +47,7 @@ public class UserService {
     }
 
     @Cacheable(cacheNames = CacheNames.USER_BY_USERNAME, key = "#username")
+    @Transactional(readOnly = true)
     public UserRsDto findByUsername(String username) {
         return userRepository.findByUsername(username)
                 .map(mapperUtil::toUserRsDto)
