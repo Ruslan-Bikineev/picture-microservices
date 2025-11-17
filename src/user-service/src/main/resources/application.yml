@@ -7,15 +7,41 @@ spring:
   jpa:
     hibernate:
       ddl-auto: none
-  sql:
-    init:
-      mode: never
+  liquibase:
+    change-log: classpath:db.changelog/db.changelog-patches.xml
+    enabled: true
+  cloud:
+    function:
+      definition: userServiceLog
+    stream:
+      default-binder: UserKafka
+      binders:
+        UserKafka:
+          type: kafka
+          environment:
+            spring:
+              kafka:
+                bootstrap-servers: localhost:9092
+      bindings:
+        userServiceLog-out-0:
+          destination: user-service-log
+          content-type: application/json
+        userServiceLog-in-0:
+          destination: user-service-log
+          content-type: application/json
+          group: user-service-group
+          consumer:
+            batch-mode: true
+            batch-size: 10
+
+
 springdoc:
   api-docs:
     path: /api-docs
   swagger-ui:
     path: /swagger/index.html
     disable-swagger-default-url: true
+
 management:
   endpoints:
     web:
@@ -24,3 +50,7 @@ management:
   endpoint:
     health:
       show-details: never
+
+kafka-producer:
+  topics:
+    user-service-log: userServiceLog-out-0

@@ -20,6 +20,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpHeaders;
+import org.springframework.test.context.jdbc.Sql;
+import org.springframework.test.context.jdbc.SqlGroup;
 
 import java.util.List;
 import java.util.Optional;
@@ -35,6 +37,10 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.startsWith;
 
+@SqlGroup({
+        @Sql(value = {"/data/insert_data.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD),
+        @Sql(value = {"/data/truncate_data.sql"}, executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
+})
 class UserControllerTest extends ApplicationTests {
 
     @Test
