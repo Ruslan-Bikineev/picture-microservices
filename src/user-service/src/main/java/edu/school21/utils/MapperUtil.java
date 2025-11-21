@@ -21,19 +21,19 @@ import java.util.List;
 public interface MapperUtil {
 
     @Mapping(target = "collectionId", source = "collection.id")
-    UserRsDto toUserRsDto(User user);
+    UserRsDto mapToUserRsDto(User source);
 
-    User toUser(UserRqDto userRqDto);
+    User mapToUser(UserRqDto source);
 
-    @Mapping(target = "collectionId", source = "collection.id")
-    @Mapping(target = "imagesId", expression = "java(getImagesIdInCollection(collection))")
-    UserCollectionImageRsDto toUserCollectionImageRsDto(Collection collection);
+    @Mapping(target = "collectionId", source = "id")
+    @Mapping(target = "imagesId", expression = "java(getImagesIdInCollection(source))")
+    UserCollectionImageRsDto mapToUserCollectionImageRsDto(Collection source);
 
-    CollectionImage toCollectionImage(CollectionRqDto collectionRqDto, Long collectionId);
+    CollectionImage mapToCollectionImage(CollectionRqDto collectionRqDto, Long collectionId);
 
-    CollectionRsDto toCollectionRsDto(CollectionImage collectionImage);
+    CollectionRsDto mapToCollectionRsDto(CollectionImage source);
 
-    MessageRsDto toMessageRsDto(Long id, String message);
+    MessageRsDto mapToMessageRsDto(Long id, String message);
 
     @Mapping(target = "createdAt", expression = "java(LocalDateTime.now())")
     UserLogMessageDto mapToUserLogMessageDto(UserRsDto source, String message);

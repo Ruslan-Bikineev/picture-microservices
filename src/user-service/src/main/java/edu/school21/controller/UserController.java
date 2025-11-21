@@ -88,17 +88,17 @@ public class UserController {
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/registration")
     public MessageRsDto registerUser(@Valid @RequestBody UserRqDto userRqDto) {
-        User user = mapperUtil.toUser(userRqDto);
+        User user = mapperUtil.mapToUser(userRqDto);
         user.setCollection(new Collection());
         UserRsDto userRsDto = userService.save(user);
         userKafkaLogger.userRegisterLog(userRsDto);
-        return mapperUtil.toMessageRsDto(userRsDto.getId(), "Пользователь: %s успешно зарегистрирован".formatted(userRsDto.getUsername()));
+        return mapperUtil.mapToMessageRsDto(userRsDto.getId(), "Пользователь: %s успешно зарегистрирован".formatted(userRsDto.getUsername()));
     }
 
     @GeneralApiResponses(summary = "Authorization user")
     @PostMapping("/authorization")
     public TokenRsDto authorizeUser(@Valid @RequestBody UserRqDto userRqDto) {
-        User user = mapperUtil.toUser(userRqDto);
+        User user = mapperUtil.mapToUser(userRqDto);
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         user.getUsername(),
@@ -126,9 +126,9 @@ public class UserController {
             throw new EntityExistsException("Указанный imageId: %s уже существует в коллекции пользователя"
                     .formatted(collectionRqDto.getImageId()));
         } else {
-            CollectionImage collectionImage = mapperUtil.toCollectionImage(collectionRqDto, userCollection.getCollectionId());
+            CollectionImage collectionImage = mapperUtil.mapToCollectionImage(collectionRqDto, userCollection.getCollectionId());
             collectionImage = collectionImageService.save(collectionImage, userId);
-            return mapperUtil.toCollectionRsDto(collectionImage);
+            return mapperUtil.mapToCollectionRsDto(collectionImage);
         }
     }
 

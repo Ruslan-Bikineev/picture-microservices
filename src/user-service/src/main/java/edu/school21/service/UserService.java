@@ -33,7 +33,7 @@ public class UserService {
     @Transactional(readOnly = true)
     public List<UserRsDto> findAll(Pageable pageable) {
         return userRepository.findAll(pageable).stream()
-                .map(mapperUtil::toUserRsDto)
+                .map(mapperUtil::mapToUserRsDto)
                 .collect(Collectors.toList());
     }
 
@@ -42,7 +42,7 @@ public class UserService {
     public UserCollectionImageRsDto findUserCollection(long userId) {
         return userRepository.findById(userId)
                 .map(User::getCollection)
-                .map(mapperUtil::toUserCollectionImageRsDto)
+                .map(mapperUtil::mapToUserCollectionImageRsDto)
                 .orElseThrow(() -> new EntityNotFoundException("Коллекция пользователя с ID " + userId + " не была найдена"));
     }
 
@@ -50,7 +50,7 @@ public class UserService {
     @Transactional(readOnly = true)
     public UserRsDto findByUsername(String username) {
         return userRepository.findByUsername(username)
-                .map(mapperUtil::toUserRsDto)
+                .map(mapperUtil::mapToUserRsDto)
                 .orElseThrow(() -> new EntityNotFoundException("Пользователь с username %s не был найден".formatted(username)));
     }
 
@@ -65,7 +65,7 @@ public class UserService {
         checkExistUserByUsername(user.getUsername());
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         user = userRepository.save(user);
-        return mapperUtil.toUserRsDto(user);
+        return mapperUtil.mapToUserRsDto(user);
     }
 
     private void checkExistUserByUsername(String username) {
