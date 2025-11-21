@@ -24,10 +24,10 @@ public class KafkaConsumer {
     public Consumer<List<UserLogMessageDto>> userServiceLog() {
         return messages -> {
             log.info("KafkaConsumer.userServiceLog() messages size: {}", messages.size());
-            messages.forEach(message -> {
-                UserLogMessage userLogMessage = mapperUtil.mapToUserLogMessage(message);
-                userLogMessageService.save(userLogMessage);
-            });
+            List<UserLogMessage> userLogMessages = messages.stream()
+                    .map(mapperUtil::mapToUserLogMessage)
+                    .toList();
+            userLogMessageService.saveAll(userLogMessages);
         };
     }
 }

@@ -18,10 +18,8 @@ spring:
       binders:
         UserKafka:
           type: kafka
-          environment:
-            spring:
-              kafka:
-                bootstrap-servers: localhost:9092
+          environment.spring.kafka:
+            bootstrap-servers: localhost:9092, localhost:9094
       bindings:
         userServiceLog-out-0:
           destination: user-service-log
@@ -33,8 +31,6 @@ spring:
           consumer:
             batch-mode: true
             batch-size: 10
-
-
 springdoc:
   api-docs:
     path: /api-docs
