@@ -1,7 +1,9 @@
+val springCloudVersion by extra("2025.0.0")
+val mapstructVersion by extra("1.6.3")
+val liquibaseVersion by extra("4.31.1")
 val javaVersion = "21"
 val springdocVersion = "2.8.8"
 val dataFakerVersion = "2.4.3"
-val mapstructVersion = "1.6.3"
 val restAssuredVersion = "5.5.5"
 val jsonwebtokenVersion = "0.12.6"
 val testcontainersVersion = "1.21.3"
@@ -26,6 +28,12 @@ repositories {
     mavenCentral()
 }
 
+dependencyManagement {
+    imports {
+        mavenBom("org.testcontainers:testcontainers-bom:$testcontainersVersion")
+        mavenBom("org.springframework.cloud:spring-cloud-dependencies:$springCloudVersion")
+    }
+}
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.projectlombok:lombok")
@@ -38,9 +46,11 @@ dependencies {
     implementation("net.datafaker:datafaker:$dataFakerVersion")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
-    implementation("org.liquibase:liquibase-core")
-    implementation(platform("org.testcontainers:testcontainers-bom:$testcontainersVersion"))
-
+    implementation("org.apache.kafka:kafka-streams")
+    implementation("org.springframework.cloud:spring-cloud-stream")
+    implementation("org.springframework.cloud:spring-cloud-stream-binder-kafka")
+    implementation("org.springframework.cloud:spring-cloud-starter-stream-kafka")
+    implementation("org.liquibase:liquibase-core:$liquibaseVersion")
     runtimeOnly("org.postgresql:postgresql")
     runtimeOnly("io.jsonwebtoken:jjwt-jackson:$jsonwebtokenVersion")
     runtimeOnly("io.jsonwebtoken:jjwt-impl:$jsonwebtokenVersion")
@@ -54,7 +64,7 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.security:spring-security-test")
     testImplementation("org.springframework.boot:spring-boot-testcontainers")
-
+    testImplementation("org.testcontainers:kafka")
     annotationProcessor("org.projectlombok:lombok")
     annotationProcessor("org.mapstruct:mapstruct-processor:$mapstructVersion")
 }

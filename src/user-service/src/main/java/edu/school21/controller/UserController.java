@@ -12,6 +12,7 @@ import edu.school21.entity.Collection;
 import edu.school21.entity.CollectionImage;
 import edu.school21.entity.User;
 import edu.school21.service.CollectionImageService;
+import edu.school21.service.UserKafkaLogger;
 import edu.school21.service.UserService;
 import edu.school21.utils.JwtUtil;
 import edu.school21.utils.MapperUtil;
@@ -52,6 +53,7 @@ public class UserController {
     private final JwtUtil jwtUtils;
     private final MapperUtil mapperUtil;
     private final UserService userService;
+    private final UserKafkaLogger userKafkaLogger;
     private final CollectionImageService collectionImageService;
     private final AuthenticationManager authenticationManager;
 
@@ -86,16 +88,17 @@ public class UserController {
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/registration")
     public MessageRsDto registerUser(@Valid @RequestBody UserRqDto userRqDto) {
-        User user = mapperUtil.toUser(userRqDto);
+        User user = mapperUtil.mapToUser(userRqDto);
         user.setCollection(new Collection());
         UserRsDto userRsDto = userService.save(user);
-        return mapperUtil.toMessageRsDto(userRsDto.getId(), "Пользователь: %s успешно зарегистрирован".formatted(userRsDto.getUsername()));
+        userKafkaLogger.userRegisterLog(userRsDto);
+        return mapperUtil.mapToMessageRsDto(userRsDto.getId(), "Пользователь: %s успешно зарегистрирован".formatted(userRsDto.getUsername()));
     }
 
     @GeneralApiResponses(summary = "Authorization user")
     @PostMapping("/authorization")
     public TokenRsDto authorizeUser(@Valid @RequestBody UserRqDto userRqDto) {
-        User user = mapperUtil.toUser(userRqDto);
+        User user = mapperUtil.mapToUser(userRqDto);
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         user.getUsername(),
@@ -105,6 +108,7 @@ public class UserController {
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
         long userId = userService.findByUsername(userDetails.getUsername()).getId();
         String jwt = jwtUtils.generateToken(userId);
+        userKafkaLogger.userAuthorizationLog(userId, userRqDto.getUsername());
         return new TokenRsDto(jwt);
     }
 
@@ -122,9 +126,9 @@ public class UserController {
             throw new EntityExistsException("Указанный imageId: %s уже существует в коллекции пользователя"
                     .formatted(collectionRqDto.getImageId()));
         } else {
-            CollectionImage collectionImage = mapperUtil.toCollectionImage(collectionRqDto, userCollection.getCollectionId());
+            CollectionImage collectionImage = mapperUtil.mapToCollectionImage(collectionRqDto, userCollection.getCollectionId());
             collectionImage = collectionImageService.save(collectionImage, userId);
-            return mapperUtil.toCollectionRsDto(collectionImage);
+            return mapperUtil.mapToCollectionRsDto(collectionImage);
         }
     }
 
